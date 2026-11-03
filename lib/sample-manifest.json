@@ -1,0 +1,114 @@
+{
+  "note": "Sample call: both sides are AssemblyAI text-to-speech; the trainee's lines are scripted.",
+  "callerVoice": "aai-hailey",
+  "traineeVoice": "aai-peter",
+  "endT": 65528,
+  "turns": [
+    {
+      "who": "caller",
+      "text": "Please, please, I need- I need an ambulance, my dad, he's on the FLOOR --",
+      "t": 0,
+      "dur": 5040,
+      "src": "/sample/00-caller.mp3"
+    },
+    {
+      "who": "trainee",
+      "text": "911, what's the address of your emergency?",
+      "t": 5740,
+      "dur": 3040,
+      "src": "/sample/01-trainee.mp3"
+    },
+    {
+      "who": "caller",
+      "text": "It's- it's 4-1-7 Maple-- Maple Court! Please, PLEASE hurry --",
+      "t": 9580,
+      "dur": 5760,
+      "src": "/sample/02-caller.mp3",
+      "cutAt": 6
+    },
+    {
+      "who": "trainee",
+      "text": "Maria, I'm with you. Help is on the way. Is that 417 Maple Court?",
+      "t": 12748,
+      "dur": 4800,
+      "src": "/sample/03-trainee.mp3"
+    },
+    {
+      "who": "caller",
+      "text": "Okay. Okay. Thank you. Yes, that's- that's right. Please hurry.",
+      "t": 18348,
+      "dur": 5120,
+      "src": "/sample/04-caller.mp3"
+    },
+    {
+      "who": "trainee",
+      "text": "What's the number you're calling from?",
+      "t": 24168,
+      "dur": 1840,
+      "src": "/sample/05-trainee.mp3"
+    },
+    {
+      "who": "caller",
+      "text": "It's 5-5-5, 0-1-4-2. It's my cell.",
+      "t": 26808,
+      "dur": 4400,
+      "src": "/sample/06-caller.mp3"
+    },
+    {
+      "who": "trainee",
+      "text": "555 0142?",
+      "t": 31908,
+      "dur": 2640,
+      "src": "/sample/07-trainee.mp3"
+    },
+    {
+      "who": "caller",
+      "text": "Yes, that's my number.",
+      "t": 35348,
+      "dur": 1920,
+      "src": "/sample/08-caller.mp3"
+    },
+    {
+      "who": "trainee",
+      "text": "Is he breathing?",
+      "t": 37968,
+      "dur": 1280,
+      "src": "/sample/09-trainee.mp3"
+    },
+    {
+      "who": "caller",
+      "text": "He's, uh, he's gasping. Like every few seconds. It doesn't sound right.",
+      "t": 40048,
+      "dur": 5200,
+      "src": "/sample/10-caller.mp3"
+    },
+    {
+      "who": "trainee",
+      "text": "Listen to me. Put him flat on his back.",
+      "t": 45948,
+      "dur": 2640,
+      "src": "/sample/11-trainee.mp3"
+    },
+    {
+      "who": "caller",
+      "text": "Okay. He's, uh, he's flat on his back now.",
+      "t": 49388,
+      "dur": 3280,
+      "src": "/sample/12-caller.mp3"
+    },
+    {
+      "who": "trainee",
+      "text": "Put the heel of your hand in the center of his chest and push hard and fast.",
+      "t": 53368,
+      "dur": 4560,
+      "src": "/sample/13-trainee.mp3"
+    },
+    {
+      "who": "caller",
+      "text": "Okay. I'm pushing hard and fast. One, two, three, four.",
+      "t": 58728,
+      "dur": 5600,
+      "src": "/sample/14-caller.mp3"
+    }
+  ]
+}

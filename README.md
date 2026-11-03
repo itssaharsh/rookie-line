@@ -19,6 +19,8 @@ Answer the ringing line, hold **Space** to talk (or type), get the address and a
 | "I have 471 Maple Court" | "No-- no! It's 4-1-7 Maple-- Maple Court!" and the slot marks the wrong read-back |
 | **Hang up** | The scorecard: seconds to a confirmed address, what you read back, what you missed, and why her panic moved |
 
+No mic, or want to hear it first? **Hear a sample call** plays a one-minute call on the same screen: the caller's lines come from the same engine, both voices are AssemblyAI text-to-speech, and the trainee's side is scripted.
+
 Three lines: a cardiac arrest (English), a kitchen fire with an elderly man who wants to go back for his dog (English), and a car crash where the caller speaks Spanish.
 
 ## How it works
@@ -42,7 +44,7 @@ Measured in a browser run on 3 November 2026: her first words 0.29–0.31 s afte
 | Answers to unplanned questions | live: AssemblyAI LLM Gateway (`qwen3.5-4b-32k-fast`), fenced by code |
 | Panic, facts, read-back checks, scoring | deterministic code (`lib/engine`), 37 tests |
 | The emergencies | training scenarios: the callers, addresses and phone numbers are fictional |
-| The sample scorecard on the first screen | the same engine run on a scripted trainee, labelled as a sample |
+| The sample call and sample scorecard | the same engine run on a scripted trainee; both voices pre-rendered with AssemblyAI text-to-speech (`scripts/render-sample.mts`), labelled as a sample |
 
 ## Limits
 

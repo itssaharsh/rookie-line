@@ -5,7 +5,7 @@
    "findings": [
     [
      "ok",
-     "primary action \"Answer line 1\" is on the first screen (y=556, given)"
+     "primary action \"Answer line 1\" is on the first screen (y=578, given)"
     ],
     [
      "ok",
@@ -25,16 +25,16 @@
     "vh": 900,
     "scrollY": 0,
     "scrollWidth": 1440,
-    "scrollHeight": 900,
+    "scrollHeight": 944,
     "action": {
      "text": "Answer line 1",
      "how": "given",
      "x": 300,
-     "y": 556,
+     "y": 578,
      "w": 168,
      "h": 56,
-     "bottom": 612,
-     "docY": 556,
+     "bottom": 634,
+     "docY": 578,
      "above": true,
      "offside": false,
      "cover": null,
@@ -70,7 +70,7 @@
      "min": 12,
      "sample": "TRAINING SIMULATION \u00b7 fictional caller a",
      "median": 14,
-     "n": 36
+     "n": 57
     },
     "promise": [
      [
@@ -86,7 +86,7 @@
      "LINES",
      "LINE 1 \u00b7 911 \u00b7 RINGING",
      "Cardiac arrest",
-     "TRY IT IN 90 SECONDS"
+     "LINE 2 \u00b7 911 \u00b7 READY"
     ]
    },
    "screenshot": "qa/fold/first_1440x900.png",
@@ -103,7 +103,7 @@
     ],
     [
      "ok",
-     "the result is on the first screen with no input (y=666)"
+     "the result is on the first screen with no input (y=734)"
     ],
     [
      "ok",
@@ -119,7 +119,7 @@
     "vh": 844,
     "scrollY": 0,
     "scrollWidth": 390,
-    "scrollHeight": 1473,
+    "scrollHeight": 1693,
     "action": {
      "text": "Answer line 1",
      "how": "given",
@@ -136,11 +136,11 @@
     },
     "result": {
      "x": 24,
-     "y": 666,
+     "y": 734,
      "w": 342,
      "h": 45,
-     "bottom": 711,
-     "docY": 666,
+     "bottom": 779,
+     "docY": 734,
      "above": true,
      "offside": false
     },
@@ -164,7 +164,7 @@
      "min": 12,
      "sample": "TRAINING SIMULATION \u00b7 fictional caller a",
      "median": 15,
-     "n": 18
+     "n": 15
     },
     "promise": [
      [
@@ -180,7 +180,7 @@
      "LINES",
      "LINE 1 \u00b7 911 \u00b7 RINGING",
      "Cardiac arrest",
-     "TRY IT IN 90 SECONDS"
+     "LINE 2 \u00b7 911 \u00b7 READY"
     ]
    },
    "screenshot": "qa/fold/first_390x844.png",

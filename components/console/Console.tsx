@@ -13,7 +13,7 @@ import { Captions, type CaptionLine } from "./Captions";
 import { PanicTrace } from "./PanicTrace";
 import { IncidentCard } from "./IncidentCard";
 import { ScorecardView } from "./ScorecardView";
-import { sampleCard, sampleEnded, sampleLive } from "@/lib/sample-run";
+import { sampleCard, sampleEnded, sampleLive, sampleManifest, sampleStateAt } from "@/lib/sample-run";
 
 type Phase = "ringing" | "connecting" | "live" | "ended" | "error";
 
@@ -58,6 +58,9 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
   const [card, setCard] = useState<{ card: Scorecard; previous: Scorecard | null; trace: CallState["panicTrace"]; text?: string } | null>(null);
   const [engineInfo, setEngineInfo] = useState({ voice: "", model: "" });
   const [micReady, setMicReady] = useState(false);
+  const [sampleT, setSampleT] = useState<number | null>(null);
+  const [cardIsSample, setCardIsSample] = useState(false);
+  const sampleJob = useRef<{ timers: ReturnType<typeof setTimeout>[]; audios: HTMLAudioElement[]; tick?: ReturnType<typeof setInterval> } | null>(null);
   const [status, setStatus] = useState("");
 
   const voice = useRef<CallerVoice | null>(null);
@@ -273,6 +276,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
     setPhase("connecting");
     setError(null);
     setCard(null);
+    setCardIsSample(false);
     setCaptions([]);
     lines.current.clear();
     setMetrics([]);
@@ -319,6 +323,48 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
       setStatus("");
     }
   }, [prepare, say, scenario]);
+
+  // ---- the sample call: recorded AssemblyAI voices on the engine's own timeline ----
+  const stopSample = useCallback((finished: boolean) => {
+    const job = sampleJob.current;
+    if (job) {
+      job.timers.forEach(clearTimeout);
+      clearInterval(job.tick);
+      job.audios.forEach((a) => a.pause());
+    }
+    sampleJob.current = null;
+    setSampleT(null);
+    if (finished) {
+      setCard({ card: sampleCard, previous: null, trace: sampleEnded.panicTrace, text: transcript(sampleEnded, scenarios[0], sampleCard) });
+      setCardIsSample(true);
+      setPhase("ended");
+    }
+  }, [scenarios]);
+
+  const playSample = useCallback(() => {
+    if (phaseRef.current !== "ringing" && phaseRef.current !== "ended") return;
+    if (scenario.id !== scenarios[0].id) setScenarioId(scenarios[0].id);
+    const turns = sampleManifest.turns;
+    const audios = turns.map((turn) => {
+      const a = new Audio(turn.src);
+      a.preload = "auto";
+      return a;
+    });
+    const start = performance.now();
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    turns.forEach((turn, i) => {
+      timers.push(setTimeout(() => void audios[i].play().catch(() => {}), turn.t));
+      const next = turns[i + 1];
+      if (turn.cutAt !== undefined && next) timers.push(setTimeout(() => audios[i].pause(), next.t));
+    });
+    timers.push(setTimeout(() => stopSample(true), sampleManifest.endT));
+    const tick = setInterval(() => setSampleT(performance.now() - start), 100);
+    sampleJob.current = { timers, audios, tick };
+    setCard(null);
+    setCardIsSample(false);
+    setSampleT(0);
+    setPhase("ringing");
+  }, [scenario.id, scenarios, stopSample]);
 
   const finish = useCallback(() => {
     if (!callRef.current) return;
@@ -390,7 +436,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
       if (e.code !== "Space" || isTyping(e)) return;
       if ((e.target as HTMLElement)?.tagName === "BUTTON") return; // let buttons handle their own Space
       e.preventDefault();
-      if (e.repeat) return;
+      if (e.repeat || sampleJob.current) return;
       if (phaseRef.current === "ringing") void answer();
       else startTalking();
     };
@@ -423,6 +469,9 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
       voice.current?.close();
       ear.current?.close();
       prepared.current?.then((r) => r.v.close()).catch(() => {});
+      sampleJob.current?.timers.forEach(clearTimeout);
+      clearInterval(sampleJob.current?.tick);
+      sampleJob.current?.audios.forEach((a) => a.pause());
     },
     [],
   );
@@ -444,14 +493,19 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
     () => new URLSearchParams(window.location.search).get("state") ?? "",
     () => "",
   );
+  const sampling = sampleT !== null;
   const qaLive = qa === "live" || qa === "typed";
-  const dPhase: Phase = qa === "scorecard" ? "ended" : qaLive ? "live" : qa === "error" ? "error" : qa === "connecting" ? "connecting" : phase;
-  const dCall = qaLive ? sampleLive : qa === "scorecard" ? sampleEnded : call;
-  const dCaptions: CaptionLine[] = qaLive ? sampleCaptions() : captions;
+  const dPhase: Phase = sampling ? "live" : qa === "scorecard" ? "ended" : qaLive ? "live" : qa === "error" ? "error" : qa === "connecting" ? "connecting" : phase;
+  const dCall = sampling ? sampleStateAt(sampleT) : qaLive ? sampleLive : qa === "scorecard" ? sampleEnded : call;
+  const dCaptions: CaptionLine[] = sampling ? sampleCaptionsAt(sampleT) : qaLive ? sampleCaptions() : captions;
   const dCard = qa === "scorecard" ? { card: sampleCard, previous: null, trace: sampleEnded.panicTrace, text: transcript(sampleEnded, scenario, sampleCard) } : card;
   const dError = qa === "error" ? "The line is unavailable right now." : error;
-  const dNow = qaLive ? (sampleLive.turns.at(-1)?.t ?? 0) + 2500 : qa === "scorecard" ? sampleCard.durationMs : nowMs;
-  const dTrainee = qaLive ? (sampleLive.turns.filter((t) => t.who === "trainee").at(-1)?.text ?? "") : lastTrainee;
+  const dNow = sampling ? sampleT : qaLive ? (sampleLive.turns.at(-1)?.t ?? 0) + 2500 : qa === "scorecard" ? sampleCard.durationMs : nowMs;
+  const dTrainee = sampling
+    ? (sampleManifest.turns.filter((x) => x.who === "trainee" && x.t <= sampleT).at(-1)?.text ?? "")
+    : qaLive
+      ? (sampleLive.turns.filter((t) => t.who === "trainee").at(-1)?.text ?? "")
+      : lastTrainee;
   const live = dPhase === "live";
   const panic = dCall?.panic ?? scenario.startPanic;
   const prevPanic = dCall && dCall.panicTrace.length > 1 ? dCall.panicTrace[dCall.panicTrace.length - 2].panic : null;
@@ -534,7 +588,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                 card={dCard.card}
                 previous={dCard.previous}
                 trace={dCard.trace}
-                title={`Line ${scenario.line} · ${scenario.title}`}
+                title={cardIsSample && !qa ? `Sample call · Line ${scenario.line} · ${scenario.title}` : `Line ${scenario.line} · ${scenario.title}`}
                 onAgain={() => void answer()}
                 onNext={reset}
                 transcriptText={dCard.text}
@@ -555,7 +609,14 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                 >
                   {dPhase === "connecting" ? "Connecting…" : `Answer line ${scenario.line}`}
                 </button>
-                <span className="text-[15px] text-ink-muted">or press Space · a headset helps</span>
+                <button
+                  onClick={playSample}
+                  disabled={dPhase === "connecting"}
+                  className="h-14 px-5 rounded-md bg-surface-2 text-[16px] disabled:opacity-60"
+                >
+                  Hear a sample call (1 min)
+                </button>
+                <span className="text-[15px] text-ink-muted">or press Space to answer · a headset helps</span>
               </div>
               {/* small screens: the result, before the line keys push it down */}
               {dPhase === "ringing" && (
@@ -647,7 +708,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
 
       {/* control bar */}
       <footer className="sticky bottom-0 bg-canvas min-h-[72px] px-5 py-3 border-t border-line flex items-center gap-3 flex-wrap">
-        {live && !typedOnly && qa !== "typed" && (
+        {live && !sampling && !typedOnly && qa !== "typed" && (
           <button
             onPointerDown={(e) => {
               e.preventDefault();
@@ -679,7 +740,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
             {talking && <Meter v={micLevel} dark />}
           </button>
         )}
-        {live && (showTyping || typedOnly || qa === "typed") ? (
+        {live && !sampling && (showTyping || typedOnly || qa === "typed") ? (
           <form
             className="flex gap-2 flex-1 min-w-[260px]"
             onSubmit={(e) => {
@@ -703,16 +764,21 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
             </button>
           </form>
         ) : (
-          live && (
+          live && !sampling && (
             <button onClick={() => setShowTyping(true)} className="h-12 px-4 rounded-md bg-surface-2 text-[15px]">
               Type instead
             </button>
           )
         )}
+        {sampling && (
+          <button onClick={() => stopSample(false)} className="h-12 px-4 rounded-md bg-surface-2 text-[15px]">
+            Stop the sample
+          </button>
+        )}
         <span className="flex-1 text-sm text-ink-muted" role="status" aria-live="polite">
-          {status}
+          {sampling ? "Sample call: both voices are AssemblyAI text-to-speech; the trainee's lines are scripted." : status}
         </span>
-        {live && (
+        {live && !sampling && (
           <button onClick={finish} className="h-12 px-4 text-[15px] text-danger">
             Hang up
           </button>
@@ -734,6 +800,26 @@ function sampleCaptions(): CaptionLine[] {
     const last = i === callerTurns.length - 1;
     return { id: i + 1, text: t.text, lit: last ? Math.ceil(words / 2) : words, done: !last };
   });
+}
+
+/** Caption lines from the sample timeline at time t: words lit by elapsed share, cut lines cut. */
+function sampleCaptionsAt(t: number): CaptionLine[] {
+  const turns = sampleManifest.turns;
+  const out: CaptionLine[] = [];
+  turns.forEach((turn, i) => {
+    if (turn.who !== "caller" || turn.t > t) return;
+    const next = turns[i + 1];
+    const cut = turn.cutAt !== undefined && next && t >= next.t ? turn.cutAt : undefined;
+    const elapsed = t - turn.t;
+    out.push({
+      id: i + 1,
+      text: turn.text,
+      lit: estimateWordsHeard(turn.text, elapsed, turn.dur),
+      cutAt: cut,
+      done: cut === undefined && elapsed >= turn.dur,
+    });
+  });
+  return out.slice(-3);
 }
 
 function Meter({ v, dark = false }: { v: number; dark?: boolean }) {
