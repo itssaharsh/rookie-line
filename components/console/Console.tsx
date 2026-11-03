@@ -237,7 +237,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
       onWords: () => refreshCaptions(),
       onError: (m: string) => setStatus(m),
       onClose: (code: number) => {
-        if (phaseRef.current === "live" && code !== 1000) setStatus("Her audio dropped. Her words still show here.");
+        if (phaseRef.current === "live" && code !== 1000) setStatus("The caller's audio dropped. The words still show here.");
       },
     };
   }, [armSilence, refreshCaptions]);
@@ -303,7 +303,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
         .then(() => {
           setEngineInfo({ voice: scenario.voiceId, model: e.model || "universal-3-6-pro" });
           setMicReady(true);
-          setStatus("Tip: talk over her and she stops mid-word.");
+          setStatus(`Tip: talk over ${scenario.caller.obj} and ${scenario.caller.subj.toLowerCase()} stops mid-word.`);
         })
         .catch((err) => {
           if (!(err instanceof MicDeniedError)) console.warn("transcription unavailable", err);
@@ -508,9 +508,9 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
           {(dPhase === "ringing" || dPhase === "error") && (
             <div className="mt-4 p-3.5 border border-line rounded-md flex flex-col gap-2">
               <span className="text-xs tracking-[0.06em] text-ink-muted">TRY IT IN 90 SECONDS</span>
-              <span className="text-sm leading-snug">1 · Answer. She is already panicking.</span>
-              <span className="text-sm leading-snug">2 · Hold Space and ask where she is. Talk over her and she stops mid-word.</span>
-              <span className="text-sm leading-snug">3 · Say her name, tell her help is coming. Hear her steady.</span>
+              <span className="text-sm leading-snug">1 · Answer. {scenario.caller.subj} is already panicking.</span>
+              <span className="text-sm leading-snug">2 · Hold Space and ask where {scenario.caller.subj.toLowerCase()} is. Talk over {scenario.caller.obj} and {scenario.caller.subj.toLowerCase()} stops mid-word.</span>
+              <span className="text-sm leading-snug">3 · Say {scenario.caller.poss} name, say help is coming. Hear {scenario.caller.obj} steady.</span>
               <span className="text-sm leading-snug">4 · Read the address back. Hang up for the scorecard.</span>
               <span className="text-[13px] text-ink-muted">No mic? You can type your side.</span>
             </div>
@@ -543,7 +543,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
               <span className="font-mono text-sm tracking-[0.08em] text-accent">● INCOMING · LINE {scenario.line} · 911</span>
               <h1 className="m-0 text-[36px] sm:text-[52px] leading-[1.1] font-semibold tracking-[-0.02em] max-w-[760px]">{scenario.brief}</h1>
               <p className="m-0 text-[19px] leading-normal text-[#c3c9d1] max-w-[640px]">
-                The caller is panicking. She stammers, cuts herself off and answers what you ask. Handle her right and you will hear her steady.
+                {scenario.teaser}
               </p>
               <div className="flex flex-wrap items-center gap-3 mt-2">
                 <button
@@ -564,7 +564,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                     return (
                       <>
                         <span className="text-ink-muted">{lastCard ? "Your last call: " : "Sample call, scripted trainee: "}</span>
-                        {sec !== null ? `${sec} s to a confirmed address` : "address never confirmed"} · her panic {c.panicStart} → {c.panicEnd}
+                        {sec !== null ? `${sec} s to a confirmed address` : "address never confirmed"} · panic {c.panicStart} → {c.panicEnd}
                       </>
                     );
                   })()}
@@ -581,7 +581,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
               <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="size-2.5 rounded-full bg-accent" aria-hidden="true" />
                 <span className="text-[13px] tracking-[0.06em] text-ink-muted">
-                  CALLER · {scenario.caller.name.toUpperCase()}, {scenario.caller.age} · HER {scenario.patient.relation.toUpperCase()} NEEDS HELP
+                  {scenario.stageLabel}
                 </span>
                 <span className="flex-1" />
                 <span className="text-[13px] text-ink-muted">Voice: AssemblyAI text-to-speech</span>
@@ -598,9 +598,9 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                 </div>
               )}
               <div className="flex-1" />
-              <section aria-label="Her panic" className="border-t border-line pt-3.5 pb-4 flex gap-5 items-end">
+              <section aria-label={`${scenario.caller.poss} panic`} className="border-t border-line pt-3.5 pb-4 flex gap-5 items-end">
                 <div className="flex flex-col gap-1 min-w-[120px]">
-                  <span className="text-xs tracking-[0.06em] text-ink-muted">HER PANIC</span>
+                  <span className="text-xs tracking-[0.06em] text-ink-muted">{scenario.caller.poss.toUpperCase()} PANIC</span>
                   <span className="font-mono text-3xl font-semibold tabular-nums">
                     {panic}
                     <span className="text-base text-ink-muted"> / 10</span>
@@ -774,7 +774,7 @@ function LastCall({ card, sample }: { card: Scorecard; sample: boolean }) {
           </span>
         ))}
         <span>
-          Her panic: <span className="font-mono">{card.panicStart} → {card.panicEnd}</span>
+          Panic: <span className="font-mono">{card.panicStart} → {card.panicEnd}</span>
         </span>
       </div>
     </section>

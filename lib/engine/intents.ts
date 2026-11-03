@@ -44,7 +44,7 @@ export function hear(text: string, scenario: Scenario): Heard {
   // questions and instructions
   if (has(t, "address", "where are you", "where is he", "where's he", "location", "where exactly", "what street", "cross street", "direccion", "donde esta", "donde estan")) intents.push("ask_address");
   if (has(t, "callback", "call back", "call you back", "phone number", "number you're calling", "number are you calling", "your number", "lose you", "lose the call", "telefono", "numero")) intents.push("ask_callback");
-  if (has(t, "what's your emergency", "what is your emergency", "what happened", "what's going on", "what is going on", "tell me what", "what's wrong", "what is wrong", "que paso", "que esta pasando")) intents.push("ask_what_happened");
+  if (has(t, "what's your emergency", "what is your emergency", "what happened", "what's going on", "what is going on", "tell me what", "what's wrong", "what is wrong", "what's on fire", "what is on fire", "what's burning", "what is burning", "where's the fire", "where is the fire", "que paso", "que esta pasando", "que se quema")) intents.push("ask_what_happened");
   if (has(t, "is he breathing", "is he breathing normally", "breathing normally", "he breathing", "his breathing", "chest moving", "chest rising", "respira", "respirando")) intents.push("ask_breathing");
   if (has(t, "awake", "conscious", "responsive", "respond to you", "answer you", "talk to you", "open his eyes", "consciente", "despierto", "responde")) intents.push("ask_conscious");
   if (has(t, "how old", "his age", "age is he", "cuantos anos", "que edad")) intents.push("ask_age");
@@ -54,10 +54,14 @@ export function hear(text: string, scenario: Scenario): Heard {
   if (has(t, "door", "unlock", "let them in", "puerta")) intents.push("ask_door");
   if (has(t, "on his back", "flat on", "lay him", "roll him", "get him on the floor", "boca arriba")) intents.push("instruct_position");
   if (has(t, "push", "compress", "compression", "cpr", "center of his chest", "middle of his chest", "heel of your hand", "hands on his chest", "pump", "empuja", "presiona", "rcp")) intents.push("instruct_cpr");
+  if (has(t, "get out", "leave the house", "leave now", "go outside", "out of the house", "get outside", "out the front", "out the door", "salga", "salgan", "sal de la casa")) intents.push("instruct_leave");
+  if (has(t, "pressure", "press on", "press down", "press hard on", "towel", "cloth", "shirt on", "on the wound", "on the cut", "stop the bleeding", "presione", "aprieta", "apriete", "trapo", "toalla")) intents.push("instruct_pressure");
+  if (has(t, "anyone else", "anybody else", "someone else", "anyone inside", "anyone in the house", "alone", "alguien mas", "alguien adentro", "esta solo", "esta sola")) intents.push("ask_others");
+  if (has(t, "are you hurt", "are you injured", "are you okay", "are you ok", "is anyone hurt", "is he hurt", "esta herido", "esta herida", "estas herida", "esta bien")) intents.push("ask_hurt");
   if (has(t, "help is on the way", "help is coming", "they're coming", "they are coming", "on their way", "on the way", "en route", "ambulance is", "paramedics are", "sending help", "i'm sending", "units are", "la ambulancia", "ayuda va en camino", "van en camino")) intents.push("help_coming");
 
   // calming cues the panic rules reward
-  if (has(t, scenario.caller.name.toLowerCase())) calm.push("name");
+  if (has(t, norm(scenario.caller.name).trim())) calm.push("name");
   if (has(t, "i'm with you", "i am with you", "i'm here", "i am here", "stay with me", "i've got you", "i got you", "estoy contigo", "estoy aqui")) calm.push("with_you");
   if (has(t, "breathe", "deep breath", "take a breath", "breath with me", "respira hondo", "respire")) calm.push("breathe");
   if (has(t, "listen to me", "i need you to listen", "listen carefully", "escuchame", "escucheme")) calm.push("listen");

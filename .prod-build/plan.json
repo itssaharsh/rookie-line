@@ -302,8 +302,15 @@
         "npm test -- engine"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "d368973",
+      "started_after": 28,
+      "evidence": [
+        "E0030",
+        "E0031",
+        "E0032"
+      ]
     },
     {
       "id": "T09",

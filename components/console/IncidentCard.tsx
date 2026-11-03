@@ -35,9 +35,6 @@ export function IncidentCard({ call, scenario, nowMs }: { call: CallState | null
   const a = scenario.facts.address;
   const addr: SlotState = addrV ? "verified" : addrMis ? "mismatch" : call?.given.address ? "heard" : "none";
   const cb: SlotState = cbV ? "verified" : cbMis ? "mismatch" : call?.given.callback ? "heard" : "none";
-  const what = ev("what_happened");
-  const breathing = ev("asked_breathing");
-  const cpr = ev("cpr_instructed");
   return (
     <section aria-label="Incident card" className="flex flex-col">
       <div className="flex items-baseline justify-between pb-2.5 border-b border-line">
@@ -58,9 +55,12 @@ export function IncidentCard({ call, scenario, nowMs }: { call: CallState | null
         value={cb === "none" ? undefined : `${cb === "verified" ? "" : "Heard: "}${scenario.facts.callback.digits.replace(/(\d{3})(\d{4})/, "$1-$2")}`}
         hint={cb === "verified" ? `Read back · ${fmt(cbV!.t)}` : cb === "heard" ? "Read it back to confirm" : cb === "mismatch" ? "You read it back wrong." : undefined}
       />
-      <Slot label="What happened" state={what ? "done" : "none"} value={what ? `${scenario.patient.relation === "father" ? "Father" : "Patient"} collapsed · ${fmt(what.t)}` : undefined} />
-      <Slot label="Is he breathing?" state={breathing ? "done" : "none"} value={breathing ? `Gasping, not normal · ${fmt(breathing.t)}` : "Not asked yet"} />
-      <Slot label="CPR instructions" state={cpr ? "done" : "none"} value={cpr ? `Started · ${fmt(cpr.t)}` : "Not started"} />
+      {scenario.checklist
+        .filter((i) => i.event && i.slot)
+        .map((i) => {
+          const e = ev(i.event!);
+          return <Slot key={i.id} label={i.slot!.label} state={e ? "done" : "none"} value={e ? `${i.slot!.done} · ${fmt(e.t)}` : "Not yet"} />;
+        })}
     </section>
   );
 }

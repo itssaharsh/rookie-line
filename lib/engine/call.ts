@@ -14,9 +14,22 @@ const SILENCE_MS = 8000;
 const PRIORITY: Intent[] = [
   "mismatch_address", "readback_address", "mismatch_callback", "readback_callback",
   "ask_address", "ask_callback", "ask_what_happened", "ask_breathing", "ask_conscious",
-  "instruct_cpr", "instruct_position", "ask_with_him", "ask_door", "ask_age",
-  "ask_caller_name", "ask_patient_name",
+  "instruct_cpr", "instruct_leave", "instruct_pressure", "ask_others", "ask_hurt", "instruct_position",
+  "ask_with_him", "ask_door", "ask_age", "ask_caller_name", "ask_patient_name",
 ];
+
+/** The event each question or instruction leaves on the record. */
+const INTENT_EVENT: Partial<Record<Intent, CallEvent["kind"]>> = {
+  ask_what_happened: "what_happened",
+  ask_breathing: "asked_breathing",
+  ask_conscious: "asked_conscious",
+  instruct_cpr: "cpr_instructed",
+  instruct_leave: "evacuate_instructed",
+  instruct_pressure: "pressure_instructed",
+  ask_others: "asked_others",
+  ask_hurt: "asked_hurt",
+  help_coming: "help_reassured",
+};
 
 export function startCall(s: Scenario, seed = Date.now()): CallState {
   return {
@@ -66,6 +79,7 @@ export function panicChange(
   calm: CalmCue[],
   agitators: Agitator[],
   intents: Intent[],
+  taskIntent?: Intent,
 ): { delta: number; reasons: { kind: "calm" | "agitated"; detail: string; d: number }[] } {
   const reasons: { kind: "calm" | "agitated"; detail: string; d: number }[] = [];
   // each calming cue counts at most twice in a call; at most -2 a turn from cues
@@ -76,8 +90,8 @@ export function panicChange(
     reasons.push({ kind: "calm", detail: "help is on the way", d: -1 });
   if (intents.includes("readback_address") && !state.verified.address)
     reasons.push({ kind: "calm", detail: "address confirmed", d: -1 });
-  if (intents.includes("instruct_cpr") && !state.cprStarted)
-    reasons.push({ kind: "calm", detail: "something to do with her hands", d: -1 });
+  if (taskIntent && intents.includes(taskIntent) && !state.cprStarted)
+    reasons.push({ kind: "calm", detail: "something to do", d: -1 });
   for (const a of agitators) {
     const detail =
       a === "calm_down" ? "told to calm down" : a === "talked_over" ? "talked over" : a === "silence" ? "silence on the line" : "asked again for what she said";
@@ -117,7 +131,7 @@ export function traineeTurn(state: CallState, s: Scenario, text: string, meta: T
       },
     };
   }
-  const applied = applyPanic(next, heard.calm, agitators, heard.intents, meta.t);
+  const applied = applyPanic(next, heard.calm, agitators, heard.intents, meta.t, s.taskIntent);
   next = applied.state;
   const r = rng(next.seed + next.turns.length * 7919);
   const parts: string[] = [];
@@ -135,7 +149,7 @@ export function traineeTurn(state: CallState, s: Scenario, text: string, meta: T
     parts.push(lineFor(bank, s, next.panic, r));
   }
   if (!parts.length) {
-    parts.push(lineFor(next.cprStarted ? s.bank.cpr_running : s.bank.filler, s, next.panic, r));
+    parts.push(lineFor(next.cprStarted ? s.bank.task_running : s.bank.filler, s, next.panic, r));
   }
 
   // what this turn established
@@ -147,11 +161,10 @@ export function traineeTurn(state: CallState, s: Scenario, text: string, meta: T
   once("callback_given", answers.includes("ask_callback") || answers.includes("mismatch_callback"));
   once("address_verified", heard.intents.includes("readback_address"), s.facts.address.written);
   once("callback_verified", heard.intents.includes("readback_callback"), s.facts.callback.written);
-  once("what_happened", heard.intents.includes("ask_what_happened"));
-  once("asked_breathing", heard.intents.includes("ask_breathing"));
-  once("asked_conscious", heard.intents.includes("ask_conscious"));
-  once("cpr_instructed", heard.intents.includes("instruct_cpr"));
-  once("help_reassured", heard.intents.includes("help_coming"));
+  for (const i of heard.intents) {
+    const kind = INTENT_EVENT[i];
+    if (kind) once(kind, true);
+  }
   if (heard.intents.includes("mismatch_address")) events.push({ kind: "address_mismatch", t, detail: text });
   if (heard.intents.includes("mismatch_callback")) events.push({ kind: "callback_mismatch", t, detail: text });
   if (meta.talkedOver) events.push({ kind: "talked_over", t });
@@ -168,7 +181,7 @@ export function traineeTurn(state: CallState, s: Scenario, text: string, meta: T
       address: next.verified.address || heard.intents.includes("readback_address"),
       callback: next.verified.callback || heard.intents.includes("readback_callback"),
     },
-    cprStarted: next.cprStarted || heard.intents.includes("instruct_cpr"),
+    cprStarted: next.cprStarted || heard.intents.includes(s.taskIntent),
     helpReassured: next.helpReassured || heard.intents.includes("help_coming"),
     turns: [...next.turns, { t, who: "caller", text: speak, panic: next.panic, source: "bank" }],
   };
@@ -179,8 +192,8 @@ export function traineeTurn(state: CallState, s: Scenario, text: string, meta: T
   };
 }
 
-function applyPanic(state: CallState, calm: CalmCue[], agitators: Agitator[], intents: Intent[], t: number) {
-  const { delta, reasons } = panicChange(state, calm, agitators, intents);
+function applyPanic(state: CallState, calm: CalmCue[], agitators: Agitator[], intents: Intent[], t: number, taskIntent?: Intent) {
+  const { delta, reasons } = panicChange(state, calm, agitators, intents, taskIntent);
   const panic = clamp(state.panic + delta);
   const events: CallEvent[] = reasons.map((r) => ({ kind: r.kind, t, detail: r.detail, panicDelta: r.d }));
   return {

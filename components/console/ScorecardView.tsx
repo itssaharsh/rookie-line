@@ -75,8 +75,8 @@ export function ScorecardView({
           </div>
         )}
       </section>
-      <section aria-label="Her panic over the call" className="flex-[1_1_380px] min-w-0 flex flex-col gap-3 p-5 bg-surface-1 rounded-lg self-start">
-        <span className="text-xs tracking-[0.06em] text-ink-muted">HER PANIC, TURN BY TURN</span>
+      <section aria-label="Panic over the call" className="flex-[1_1_380px] min-w-0 flex flex-col gap-3 p-5 bg-surface-1 rounded-lg self-start">
+        <span className="text-xs tracking-[0.06em] text-ink-muted">PANIC, TURN BY TURN</span>
         <span className="font-mono text-3xl font-semibold tabular-nums">
           {card.panicStart} → {card.panicEnd}
         </span>

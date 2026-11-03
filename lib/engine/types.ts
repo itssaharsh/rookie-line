@@ -19,6 +19,10 @@ export type Intent =
   | "ask_door"
   | "instruct_position"
   | "instruct_cpr"
+  | "instruct_leave"
+  | "instruct_pressure"
+  | "ask_others"
+  | "ask_hurt"
   | "help_coming"
   | "readback_address"
   | "readback_callback"
@@ -35,7 +39,11 @@ export interface Scenario {
   brief: string;
   language: "english" | "spanish";
   voiceId: string;
-  caller: { name: string; age: number; relation: string };
+  caller: { name: string; age: number; relation: string; subj: "She" | "He"; obj: "her" | "him"; poss: "her" | "his" };
+  /** the line above the captions: who is calling and what is happening */
+  stageLabel: string;
+  /** one sentence under the brief on the ringing screen */
+  teaser: string;
   patient: { name: string; age: number; relation: string };
   facts: {
     address: { digits: string; street: string; suffix: string; written: string };
@@ -48,13 +56,25 @@ export interface Scenario {
     filler: BandedLine; // trainee said nothing she can answer
     fallback: BandedLine; // model unavailable for an unplanned question
     repeat: BandedLine; // asked again for something she already said
-    cpr_running: BandedLine; // after compressions started
+    task_running: BandedLine; // after she started the task (compressions, leaving, pressing)
     talked_over: BandedLine; // short protest when cut off (optional prefix)
   };
-  checklist: { id: ChecklistId; label: string }[];
+  /** one sentence the model gets about what is happening */
+  situation: string;
+  /** the instruction that gives her something to do (CPR, get out, press on the wound) */
+  taskIntent: Intent;
+  checklist: ChecklistItem[];
 }
 
-export type ChecklistId = "address" | "callback" | "what_happened" | "breathing" | "cpr";
+export interface ChecklistItem {
+  id: string;
+  /** what the trainee should get, as the left column lists it */
+  label: string;
+  /** address and callback are checked by read-back; the rest by the event they need */
+  event?: EventKind;
+  slot?: { label: string; done: string };
+  score?: { done: string; missed: string };
+}
 
 export type EventKind =
   | "answered"
@@ -68,6 +88,10 @@ export type EventKind =
   | "asked_breathing"
   | "asked_conscious"
   | "cpr_instructed"
+  | "evacuate_instructed"
+  | "pressure_instructed"
+  | "asked_others"
+  | "asked_hurt"
   | "help_reassured"
   | "talked_over"
   | "calm"

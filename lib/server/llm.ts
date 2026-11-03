@@ -17,7 +17,8 @@ const STYLE = {
 export function systemPrompt(s: Scenario, panic: number): string {
   const band = bandOf(panic);
   return [
-    `You are ${s.caller.name}, ${s.caller.age}, on the phone with a 911 call-taker. Your ${s.patient.relation} ${s.patient.name}, ${s.patient.age}, ${s.title.toLowerCase() === "cardiac arrest" ? "grabbed his chest and collapsed in the kitchen; he is gasping and does not respond" : "is in danger"}.`,
+    `You are ${s.caller.name}, ${s.caller.age}, on the phone with a 911 call-taker. ${s.situation}`,
+    s.language === "spanish" ? "Speak only Spanish, the way a frightened Mexican caller would." : "Speak English.",
     "Answer only the call-taker's last question, as yourself, in spoken words.",
     "Never say any number, address, street, phone number, time or date. If asked for one, say you just told them or that you don't know.",
     "No stage directions, no brackets, no emojis, no quotes. Never say you are an AI or a simulation.",

@@ -31,20 +31,19 @@ export function score(state: CallState, s: Scenario): Scorecard {
   const end = state.events.find((e) => e.kind === "ended")?.t ?? state.turns.at(-1)?.t ?? 0;
   const addr = first(state, "address_verified");
   const cb = first(state, "callback_verified");
-  const breathing = first(state, "asked_breathing");
-  const cpr = first(state, "cpr_instructed");
-  const what = first(state, "what_happened");
   const talkedOver = state.events.filter((e) => e.kind === "talked_over").length;
   const mismatches = state.events.filter((e) => e.kind === "address_mismatch" || e.kind === "callback_mismatch").length;
   const rows: ScoreRow[] = [
     { id: "address", ok: addr !== undefined, label: addr !== undefined ? "Address read back and confirmed" : state.given.address ? "Address heard but never read back" : "Never got the address", t: addr },
     { id: "callback", ok: cb !== undefined, label: cb !== undefined ? "Callback number read back" : state.given.callback ? "Callback number heard but never read back" : "No callback number", t: cb },
-    { id: "what_happened", ok: what !== undefined, label: what !== undefined ? "Asked what happened" : "Never asked what happened", t: what },
-    { id: "breathing", ok: breathing !== undefined, label: breathing !== undefined ? "Asked if he's breathing" : "Never asked if he's breathing", t: breathing },
-    { id: "cpr", ok: cpr !== undefined, label: cpr !== undefined ? "Started CPR instructions" : "No CPR instructions", t: cpr },
   ];
+  for (const item of s.checklist) {
+    if (!item.event || !item.score) continue;
+    const t = first(state, item.event);
+    rows.push({ id: item.id, ok: t !== undefined, label: t !== undefined ? item.score.done : item.score.missed, t });
+  }
   if (mismatches) rows.push({ id: "mismatch", ok: null, label: `Read a number back wrong ${mismatches === 1 ? "once" : `${mismatches} times`}` });
-  rows.push({ id: "talked_over", ok: null, label: talkedOver ? `Talked over her ${talkedOver === 1 ? "once" : `${talkedOver} times`}` : "Never talked over her" });
+  rows.push({ id: "talked_over", ok: null, label: talkedOver ? `Talked over ${s.caller.obj} ${talkedOver === 1 ? "once" : `${talkedOver} times`}` : `Never talked over ${s.caller.obj}` });
   return {
     scenarioId: s.id,
     durationMs: end,

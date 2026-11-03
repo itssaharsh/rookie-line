@@ -9,7 +9,9 @@ export const cardiac: Scenario = {
   brief: "Her dad collapsed. Get the address and a callback number.",
   language: "english",
   voiceId: "aai-hailey",
-  caller: { name: "Maria", age: 34, relation: "daughter" },
+  caller: { name: "Maria", age: 34, relation: "daughter", subj: "She", obj: "her", poss: "her" },
+  stageLabel: "CALLER · MARIA, 34 · HER FATHER COLLAPSED",
+  teaser: "The caller is panicking. She stammers, cuts herself off and answers what you ask. Handle her right and you will hear her steady.",
   patient: { name: "Luis", age: 67, relation: "father" },
   facts: {
     address: { digits: "417", street: "Maple", suffix: "Court", written: "417 Maple Court" },
@@ -110,7 +112,7 @@ export const cardiac: Scenario = {
       mid: ["Okay. Okay. Thank you."],
       low: ["Okay. Thank you."],
     },
-    cpr_running: {
+    task_running: {
       high: ["I'm pushing! Is- is this right?! When are they COMING?!"],
       mid: ["I'm still pushing. Are they, uh, are they close?"],
       low: ["Still pushing. Twenty-one, twenty-two, twenty-three."],
@@ -136,11 +138,14 @@ export const cardiac: Scenario = {
       low: [""],
     },
   },
+  situation:
+    "Your father Luis, 67, grabbed his chest and collapsed in the kitchen a minute ago. He is gasping every few seconds and does not respond. You are kneeling next to him.",
+  taskIntent: "instruct_cpr",
   checklist: [
     { id: "address", label: "The address, read back" },
     { id: "callback", label: "A callback number" },
-    { id: "what_happened", label: "What happened" },
-    { id: "breathing", label: "Is he breathing?" },
-    { id: "cpr", label: "Start CPR instructions" },
+    { id: "what_happened", label: "What happened", event: "what_happened", slot: { label: "What happened", done: "Father collapsed" }, score: { done: "Asked what happened", missed: "Never asked what happened" } },
+    { id: "breathing", label: "Is he breathing?", event: "asked_breathing", slot: { label: "Is he breathing?", done: "Gasping, not normal" }, score: { done: "Asked if he's breathing", missed: "Never asked if he's breathing" } },
+    { id: "cpr", label: "Start CPR instructions", event: "cpr_instructed", slot: { label: "CPR instructions", done: "Started" }, score: { done: "Started CPR instructions", missed: "No CPR instructions" } },
   ],
 };

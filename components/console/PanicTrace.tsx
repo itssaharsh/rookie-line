@@ -38,7 +38,7 @@ export function PanicTrace({ trace, nowMs, height = 96, live = true }: Props) {
       className="w-full"
       style={{ height: H }}
       role="img"
-      aria-label={`Her panic by turn: ${trace.map((p) => p.panic).join(", ")}`}
+      aria-label={`Panic by turn: ${trace.map((p) => p.panic).join(", ")}`}
     >
       <line x1="0" y1={H - pad} x2={W} y2={H - pad} stroke="var(--line)" />
       <path d={area} fill="var(--accent)" fillOpacity="0.12" />

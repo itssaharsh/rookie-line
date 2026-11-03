@@ -155,3 +155,34 @@ describe("scorecard (AC-9)", () => {
     expect(card.panicEnd).toBeLessThan(card.panicStart);
   });
 });
+
+import { fire } from "@/lib/scenarios/fire";
+import { crash } from "@/lib/scenarios/crash";
+
+describe("every scenario plays through", () => {
+  for (const sc of [cardiac, fire, crash]) {
+    it(`${sc.id}: address read-back, task, scorecard rows from its own checklist`, () => {
+      let st = openingLine(startCall(sc, 5), sc).state;
+      const go = (text: string, t: number) => {
+        const r = traineeTurn(st, sc, text, { t });
+        if (r.kind !== "reply") throw new Error(`${sc.id}: model turn for "${text}"`);
+        st = r.state;
+        return r.reply.speak;
+      };
+      const ans = go(sc.language === "spanish" ? "911, ¿cuál es la dirección?" : "911, what's the address of your emergency?", 3000);
+      expect(ans).toContain(sc.facts.address.digits.split("").join("-"));
+      go(`${sc.caller.name}, I'm with you. ${sc.facts.address.written}?`, 9000);
+      expect(st.verified.address).toBe(true);
+      const task = { instruct_cpr: "Push hard and fast in the center of his chest", instruct_leave: "Get out of the house now, go out the front door", instruct_pressure: "Press a towel on the wound, press hard" }[sc.taskIntent as string]!;
+      go(task, 20000);
+      expect(st.cprStarted).toBe(true);
+      const card = score(endCall(st, 30000), sc);
+      expect(card.rows.map((r) => r.id)).toEqual(expect.arrayContaining(sc.checklist.map((c) => c.id)));
+      expect(card.rows.find((r) => r.id === sc.checklist.at(-1)!.id)?.ok).toBe(true);
+    });
+  }
+  it("hears the Spanish name with or without the accent", () => {
+    expect(hear("Lucia, estoy contigo", crash).calm).toEqual(expect.arrayContaining(["name", "with_you"]));
+    expect(hear("Lucía, respira hondo", crash).calm).toEqual(expect.arrayContaining(["name", "breathe"]));
+  });
+});
