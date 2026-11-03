@@ -207,8 +207,15 @@
         "npm run typecheck"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "3efc719",
+      "started_after": 12,
+      "evidence": [
+        "E0014",
+        "E0015",
+        "E0016"
+      ]
     },
     {
       "id": "T06",
