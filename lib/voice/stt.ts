@@ -18,6 +18,8 @@ export class TraineeEar {
   private ctx?: AudioContext;
   private stream?: MediaStream;
   private node?: AudioWorkletNode;
+  private src?: MediaStreamAudioSourceNode;
+  private mute?: GainNode;
   private holding = false;
   private tailUntil = 0;
   private pending: Float32Array[] = [];
@@ -26,6 +28,13 @@ export class TraineeEar {
   private partial = "";
   private waiter?: (text: string) => void;
   model = "";
+  /** last few protocol events, for the QA scripts */
+  readonly log: string[] = [];
+  private sentBytes = 0;
+  private note(x: string) {
+    this.log.push(`${Math.round(performance.now())} ${x}`);
+    if (this.log.length > 60) this.log.shift();
+  }
   constructor(private events: EarEvents = {}) {}
 
   connect(token: string, keyterms: string[]): Promise<Record<string, unknown>> {
@@ -49,6 +58,7 @@ export class TraineeEar {
           resolve(m.configuration ?? {});
         } else if (m.type === "Turn") {
           const text = String(m.transcript ?? "");
+          if (m.end_of_turn) this.note(`EOT "${text}" holding=${this.holding} waiter=${!!this.waiter}`);
           if (m.end_of_turn) {
             if (text) this.finals.push(text);
             this.partial = "";
@@ -63,6 +73,7 @@ export class TraineeEar {
         if (!begun) reject(new Error("transcription connection failed"));
       };
       ws.onclose = (e) => {
+        this.note(`close ${e.code} ${e.reason}`);
         if (!begun) reject(new Error(`transcription closed ${e.code} ${e.reason}`));
         this.events.onClose?.(e.code);
       };
@@ -84,13 +95,21 @@ export class TraineeEar {
     }
     this.ctx = new AudioContext();
     await this.ctx.audioWorklet.addModule("/worklets/mic-tap.js");
-    const src = this.ctx.createMediaStreamSource(this.stream);
+    // keep every node referenced and pulled by the destination (through a muted gain),
+    // or Chromium can stop processing the tap partway through a call
+    this.src = this.ctx.createMediaStreamSource(this.stream);
     this.node = new AudioWorkletNode(this.ctx, "mic-tap");
     this.node.port.onmessage = (e: MessageEvent<Float32Array>) => this.onBlock(e.data);
-    src.connect(this.node);
+    this.mute = this.ctx.createGain();
+    this.mute.gain.value = 0;
+    this.src.connect(this.node);
+    this.node.connect(this.mute);
+    this.mute.connect(this.ctx.destination);
   }
 
+  private blocks = 0;
   private onBlock(block: Float32Array) {
+    this.blocks++;
     this.events.onLevel?.(this.holding ? level(block) : 0);
     const sending = this.holding || performance.now() < this.tailUntil;
     if (!sending || !this.ctx) return;
@@ -111,10 +130,14 @@ export class TraineeEar {
     this.pending = [];
     this.pendingLen = 0;
     const pcm = toPcm16k(all, this.ctx.sampleRate);
-    if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(pcm.buffer);
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(pcm.buffer);
+      this.sentBytes += pcm.byteLength;
+    } else this.note("audio dropped: socket not open");
   }
 
   press() {
+    this.note(`press (sent ${this.sentBytes} bytes, mic blocks ${this.blocks}, ctx ${this.ctx?.state}, track ${this.stream?.getAudioTracks()[0]?.readyState} muted=${this.stream?.getAudioTracks()[0]?.muted})`);
     this.finals = [];
     this.partial = "";
     this.holding = true;
@@ -123,6 +146,7 @@ export class TraineeEar {
 
   /** Release: keep 200 ms of tail, then end the turn now. Resolves with what was said. */
   release(timeoutMs = 2500): Promise<string> {
+    this.note(`release (sent ${this.sentBytes} bytes, mic blocks ${this.blocks})`);
     this.holding = false;
     this.tailUntil = performance.now() + 200;
     return new Promise((resolve) => {

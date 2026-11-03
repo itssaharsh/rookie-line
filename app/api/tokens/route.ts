@@ -6,7 +6,7 @@ import { allow, clientIp } from "@/lib/server/ratelimit";
 export async function GET() {
   const h = await headers();
   const ip = clientIp(h);
-  if (!allow(`tokens:${ip}`, 10, 10 * 60_000) || !allow("tokens:all", 300, 24 * 60 * 60_000)) {
+  if (!allow(`tokens:${ip}`, 20, 10 * 60_000) || !allow("tokens:all", 300, 24 * 60 * 60_000)) {
     return Response.json({ error: "Too many calls from here. Try again in a few minutes." }, { status: 429 });
   }
   try {

@@ -7,7 +7,8 @@ const STT_TOKEN_URL = "https://streaming.assemblyai.com/v3/token";
 const TTS_HTTP_URL = "https://tts.us.assemblyai.com/v1/speech";
 
 export const TOKEN_TTL_SECONDS = 600; // window to open the session
-export const SESSION_CAP_SECONDS = 300; // a practice call never needs more than five minutes
+export const SESSION_CAP_SECONDS = 300; // the trainee's transcription: a practice call never needs more than five minutes
+export const VOICE_CAP_SECONDS = 900; // her voice opens while the line rings, so it gets fifteen
 
 function apiKey(): string {
   const key = process.env.ASSEMBLYAI_API_KEY;
@@ -33,7 +34,7 @@ export async function mintTtsToken(): Promise<string> {
       body: JSON.stringify({
         product: "tts",
         expires_in_seconds: TOKEN_TTL_SECONDS,
-        max_session_duration_seconds: SESSION_CAP_SECONDS,
+        max_session_duration_seconds: VOICE_CAP_SECONDS,
       }),
       signal,
       cache: "no-store",

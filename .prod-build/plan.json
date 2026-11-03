@@ -182,8 +182,16 @@
         "observe: a full call in Chrome: answer, ask the address by voice, read it back, Location verified, scorecard"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "fecc6dd",
+      "started_after": 17,
+      "evidence": [
+        "E0019",
+        "E0020",
+        "E0021",
+        "E0022"
+      ]
     },
     {
       "id": "T05",

@@ -40,8 +40,12 @@ describe("numbers: read-backs in every way people say them", () => {
 });
 
 describe("intents", () => {
-  it("hears the standard greeting as an address question", () => {
-    expect(hear("911, what's the address of your emergency?", s).intents).toContain("ask_address");
+  it("hears the standard greeting as an address question, not a read-back", () => {
+    for (const g of ["911, what's the address of your emergency?", "911, what is the address", "Nine one one, what is the address of your emergency?"]) {
+      const h = hear(g, s).intents;
+      expect(h).toContain("ask_address");
+      expect(h).not.toContain("mismatch_address");
+    }
   });
   it("a correct read-back verifies; a wrong one is a mismatch", () => {
     expect(hear("Okay Maria, 417 Maple Court, is that right?", s).intents).toContain("readback_address");

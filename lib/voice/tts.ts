@@ -49,7 +49,8 @@ export class CallerVoice {
   voiceId = "";
   constructor(private events: VoiceEvents = {}) {
     const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    this.ctx = new Ctx({ sampleRate: SAMPLE_RATE });
+    // the device's native rate; 24 kHz buffers are resampled by the browser on playback
+    this.ctx = new Ctx({ latencyHint: "interactive" });
     this.gain = this.ctx.createGain();
     this.analyser = this.ctx.createAnalyser();
     this.analyser.fftSize = 512;

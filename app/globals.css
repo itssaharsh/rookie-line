@@ -68,3 +68,20 @@
     text-wrap: pretty;
   }
 }
+
+@layer components {
+  /* the ringing line key: a slow flash, steady under reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    .ring-flash {
+      animation: ring-flash 1s steps(2, jump-none) infinite;
+    }
+  }
+  @keyframes ring-flash {
+    from {
+      border-color: var(--accent);
+    }
+    to {
+      border-color: transparent;
+    }
+  }
+}

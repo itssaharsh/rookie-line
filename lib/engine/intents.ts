@@ -30,7 +30,8 @@ export function hear(text: string, scenario: Scenario): Heard {
   const { address, callback } = scenario.facts;
 
   // read-backs first: digits the trainee said, checked against the facts
-  const runs = digitRuns(text);
+  // "911" is the line itself ("911, what's the address?"), never a read-back
+  const runs = digitRuns(text).filter((r) => r !== "911");
   const streetSaid = has(t, address.street.toLowerCase());
   const addressRuns = runs.filter((r) => r.length >= 2 && r.length <= 5);
   const phoneRuns = runs.filter((r) => r.length >= 7);
