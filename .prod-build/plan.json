@@ -413,7 +413,7 @@
       "objective": "Record a first full run as the backup video",
       "kind": "record",
       "deps": [
-        "T06"
+        "T04"
       ],
       "writes": [],
       "acceptance": [
@@ -423,9 +423,14 @@
         "observe: the backup video plays and carries the TTS voice"
       ],
       "rollback": "n/a",
-      "status": "todo",
+      "status": "done",
       "notes": "",
-      "suite": false
+      "suite": false,
+      "base": "e1b5f23",
+      "started_after": 45,
+      "evidence": [
+        "E0046"
+      ]
     },
     {
       "id": "T13",
