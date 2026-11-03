@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+  /* dispatch floor at night */
+  --canvas: #13161b;
+  --surface-1: #1a1e24;
+  --surface-2: #232831;
+  --surface-sunken: #0e1115;
+  --line: #2c323c;
+  --line-input: #6b7482;
+  --ink: #eceff3;
+  --ink-muted: #9aa3af;
+  --ink-dim: #737c89; /* already-spoken caption lines; large text only */
+  /* the flashing 911 line key */
+  --accent: #ff4632;
+  --accent-ink: #160302;
+  --success: #46d08f;
+  --warning: #f2b544;
+  --danger: #ff8a80;
+  --focus: #eceff3;
+  --r-sm: 3px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-line: var(--line);
+  --color-line-input: var(--line-input);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-dim: var(--ink-dim);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--ff-display), system-ui, sans-serif;
+  --font-mono: var(--ff-mono), ui-monospace, monospace;
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--ff-display), system-ui, sans-serif;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  h1,
+  h2 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
 }
