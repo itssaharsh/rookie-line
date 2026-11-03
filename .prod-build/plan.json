@@ -357,8 +357,15 @@
         "npm run build"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "57d05ce",
+      "started_after": 32,
+      "evidence": [
+        "E0033",
+        "E0034",
+        "E0035"
+      ]
     },
     {
       "id": "T11",
