@@ -9,6 +9,7 @@ export function ScorecardView({
   title,
   onNext,
   onAgain,
+  transcriptText,
 }: {
   card: Scorecard;
   previous: Scorecard | null;
@@ -16,6 +17,7 @@ export function ScorecardView({
   title: string;
   onNext?: () => void;
   onAgain?: () => void;
+  transcriptText?: string;
 }) {
   const sec = card.addressConfirmedMs !== null ? Math.round(card.addressConfirmedMs / 1000) : null;
   const prevSec = previous?.addressConfirmedMs != null ? Math.round(previous.addressConfirmedMs / 1000) : null;
@@ -71,6 +73,15 @@ export function ScorecardView({
               <button onClick={onNext} className="h-12 px-4 rounded-md bg-surface-2 text-[15px]">
                 Back to the lines
               </button>
+            )}
+            {transcriptText && (
+              <a
+                href={`data:text/plain;charset=utf-8,${encodeURIComponent(transcriptText)}`}
+                download={`rookie-line-${card.scenarioId}-call.txt`}
+                className="h-12 px-4 rounded-md bg-surface-2 text-[15px] inline-flex items-center"
+              >
+                Download the transcript
+              </a>
             )}
           </div>
         )}

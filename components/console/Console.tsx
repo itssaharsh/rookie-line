@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import type { CallState, CallerReply, Scenario } from "@/lib/engine/types";
 import { startCall, openingLine, traineeTurn, modelTurn, markCut, endCall } from "@/lib/engine/call";
 import { score, fmt, type Scorecard } from "@/lib/engine/score";
+import { transcript } from "@/lib/engine/transcript";
 import { CallerVoice, type SpokenLine } from "@/lib/voice/tts";
 import { TraineeEar, MicDeniedError } from "@/lib/voice/stt";
 import { wordsStarted, estimateWordsHeard } from "@/lib/voice/pcm";
@@ -54,7 +55,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
   const [micLevel, setMicLevel] = useState(0);
   const [voiceLevel, setVoiceLevel] = useState(0);
   const [metrics, setMetrics] = useState<TurnMetric[]>([]);
-  const [card, setCard] = useState<{ card: Scorecard; previous: Scorecard | null; trace: CallState["panicTrace"] } | null>(null);
+  const [card, setCard] = useState<{ card: Scorecard; previous: Scorecard | null; trace: CallState["panicTrace"]; text?: string } | null>(null);
   const [engineInfo, setEngineInfo] = useState({ voice: "", model: "" });
   const [micReady, setMicReady] = useState(false);
   const [status, setStatus] = useState("");
@@ -326,7 +327,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
     setCallState(ended);
     const c = score(ended, scenario);
     const prev = saveAttempt(c);
-    setCard({ card: c, previous: prev?.card ?? null, trace: ended.panicTrace });
+    setCard({ card: c, previous: prev?.card ?? null, trace: ended.panicTrace, text: transcript(ended, scenario, c) });
     voice.current?.close();
     ear.current?.close();
     voice.current = null;
@@ -447,7 +448,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
   const dPhase: Phase = qa === "scorecard" ? "ended" : qaLive ? "live" : qa === "error" ? "error" : qa === "connecting" ? "connecting" : phase;
   const dCall = qaLive ? sampleLive : qa === "scorecard" ? sampleEnded : call;
   const dCaptions: CaptionLine[] = qaLive ? sampleCaptions() : captions;
-  const dCard = qa === "scorecard" ? { card: sampleCard, previous: null, trace: sampleEnded.panicTrace } : card;
+  const dCard = qa === "scorecard" ? { card: sampleCard, previous: null, trace: sampleEnded.panicTrace, text: transcript(sampleEnded, scenario, sampleCard) } : card;
   const dError = qa === "error" ? "The line is unavailable right now." : error;
   const dNow = qaLive ? (sampleLive.turns.at(-1)?.t ?? 0) + 2500 : qa === "scorecard" ? sampleCard.durationMs : nowMs;
   const dTrainee = qaLive ? (sampleLive.turns.filter((t) => t.who === "trainee").at(-1)?.text ?? "") : lastTrainee;
@@ -536,6 +537,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                 title={`Line ${scenario.line} · ${scenario.title}`}
                 onAgain={() => void answer()}
                 onNext={reset}
+                transcriptText={dCard.text}
               />
             </div>
           ) : dPhase === "ringing" || dPhase === "error" || dPhase === "connecting" ? (

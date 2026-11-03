@@ -186,3 +186,20 @@ describe("every scenario plays through", () => {
     expect(hear("Lucía, respira hondo", crash).calm).toEqual(expect.arrayContaining(["name", "breathe"]));
   });
 });
+
+import { transcript } from "@/lib/engine/transcript";
+
+describe("transcript", () => {
+  it("lists both sides with times, panic and cut-offs, then the scorecard", () => {
+    let st = openingLine(startCall(cardiac, 2), cardiac).state;
+    st = (traineeTurn(st, cardiac, "911, what's the address?", { t: 3000 }) as { state: CallState }).state;
+    st = markCut(st, 2);
+    st = (traineeTurn(st, cardiac, "417 Maple Court?", { t: 7000, talkedOver: true }) as { state: CallState }).state;
+    st = endCall(st, 20000);
+    const text = transcript(st, cardiac, score(st, cardiac));
+    expect(text).toMatch(/0:03 {2}YOU: 911, what's the address\?/);
+    expect(text).toMatch(/MARIA \[panic \d+\]: .*\[cut off\]/);
+    expect(text).toMatch(/\[x\] Address read back and confirmed \(0:07\)/);
+    expect(text).toMatch(/Why the panic moved/);
+  });
+});

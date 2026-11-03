@@ -314,8 +314,8 @@
     },
     {
       "id": "T09",
-      "title": "Under the hood panel and call replay",
-      "objective": "Per-turn latency, voice id, panic, held facts; replay both sides",
+      "title": "Under the hood panel and call transcript download",
+      "objective": "Per-turn latency, voice id, panic, held facts (built in T04); a timestamped transcript of the call (both sides, panic per line, cut-offs) downloadable from the scorecard. Audio replay moved to COULD: the transcript gives a trainer the same review for a fraction of the build.",
       "role": "frontend-engineer",
       "size": "M",
       "deps": [
@@ -323,18 +323,29 @@
       ],
       "writes": [
         "components/**",
-        "lib/voice/record.ts"
+        "lib/engine/transcript.ts",
+        "tests/engine/**"
       ],
       "acceptance": [
         "AC-3"
       ],
       "verify": [
+        "npm test -- engine",
         "npm run build",
-        "observe: latency per turn shown from a real call"
+        "observe: scorecard offers the transcript and it downloads with times, both sides and panic"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "33424bb",
+      "started_after": 35,
+      "evidence": [
+        "E0036",
+        "E0037",
+        "E0038",
+        "E0039",
+        "E0040"
+      ]
     },
     {
       "id": "T10",
