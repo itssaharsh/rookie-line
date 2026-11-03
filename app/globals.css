@@ -11,7 +11,8 @@
   --line-input: #6b7482;
   --ink: #eceff3;
   --ink-muted: #9aa3af;
-  --ink-dim: #737c89; /* already-spoken caption lines; large text only */
+  --ink-dim: #7d8693; /* already-spoken caption lines (4.9:1) */
+  --ink-unspoken: #666f7c; /* words she has not reached yet; large text only (3.6:1) */
   /* the flashing 911 line key */
   --accent: #ff4632;
   --accent-ink: #160302;

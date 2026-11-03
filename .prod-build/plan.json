@@ -244,8 +244,10 @@
         "observe: the deployed URL opens signed out and /api/health returns tts ok"
       ],
       "rollback": "vercel rollback",
-      "status": "todo",
-      "notes": ""
+      "status": "blocked",
+      "notes": "2026-11-03 21:50Z: adding ASSEMBLYAI_API_KEY to Vercel env was denied by the permission check (secret-store write). Needs Saharsh: approve, or run `npx vercel --scope lack-toes env add ASSEMBLYAI_API_KEY production --sensitive` himself. Nothing was created on Vercel.",
+      "base": "e50cedf",
+      "started_after": 22
     },
     {
       "id": "T07",
@@ -269,8 +271,16 @@
         "observe: foldcheck passes at 1440 and 390; axe 0 violations"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "e50cedf",
+      "started_after": 22,
+      "evidence": [
+        "E0025",
+        "E0026",
+        "E0027",
+        "E0028"
+      ]
     },
     {
       "id": "T08",

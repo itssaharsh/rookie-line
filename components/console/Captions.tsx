@@ -8,12 +8,16 @@ export interface CaptionLine {
   done: boolean;
 }
 
-export function Captions({ lines }: { lines: CaptionLine[] }) {
+export function Captions({ lines, callerName }: { lines: CaptionLine[]; callerName: string }) {
   // a line cut before any word was heard is not shown
   const older = lines.slice(0, -1).filter((l) => l.cutAt !== 0).slice(-2);
   const current = lines.at(-1);
   return (
-    <div className="flex flex-col gap-3.5 max-w-[900px]" aria-live="off">
+    <div className="flex flex-col gap-3.5 max-w-[900px]">
+      {/* screen readers get each of her lines once, as a log */}
+      <div role="log" aria-live="polite" className="sr-only">
+        {current ? `${callerName}: ${current.text}` : ""}
+      </div>
       {older.map((l) => (
         <p key={l.id} className="m-0 text-[22px] leading-[1.35] text-ink-dim">
           {l.cutAt !== undefined ? (
@@ -39,7 +43,7 @@ function CurrentLine({ line }: { line: CaptionLine }) {
     <div className="flex flex-col gap-2">
       <p className="m-0 text-[30px] sm:text-[40px] leading-[1.2] font-medium tracking-[-0.015em]">
         {shown.map((w, i) => (
-          <span key={i} style={{ color: line.done || i < line.lit ? "var(--ink)" : "#4a515c", transition: "color 120ms" }}>
+          <span key={i} style={{ color: line.done || i < line.lit ? "var(--ink)" : "var(--ink-unspoken)", transition: "color 120ms" }}>
             {w}{" "}
           </span>
         ))}

@@ -12,6 +12,7 @@ import { Captions, type CaptionLine } from "./Captions";
 import { PanicTrace } from "./PanicTrace";
 import { IncidentCard } from "./IncidentCard";
 import { ScorecardView } from "./ScorecardView";
+import { sampleCard, sampleEnded, sampleLive } from "@/lib/sample-run";
 
 type Phase = "ringing" | "connecting" | "live" | "ended" | "error";
 
@@ -302,7 +303,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
         .then(() => {
           setEngineInfo({ voice: scenario.voiceId, model: e.model || "universal-3-6-pro" });
           setMicReady(true);
-          setStatus("Hold Space to talk");
+          setStatus("Tip: talk over her and she stops mid-word.");
         })
         .catch((err) => {
           if (!(err instanceof MicDeniedError)) console.warn("transcription unavailable", err);
@@ -436,9 +437,23 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
     setNowMs(0);
   };
 
-  const live = phase === "live";
-  const panic = call?.panic ?? scenario.startPanic;
-  const prevPanic = call && call.panicTrace.length > 1 ? call.panicTrace[call.panicTrace.length - 2].panic : null;
+  // ?state=<ringing|connecting|live|typed|error|scorecard> renders a state from the sample run, for QA
+  const qa = useSyncExternalStore(
+    noopSubscribe,
+    () => new URLSearchParams(window.location.search).get("state") ?? "",
+    () => "",
+  );
+  const qaLive = qa === "live" || qa === "typed";
+  const dPhase: Phase = qa === "scorecard" ? "ended" : qaLive ? "live" : qa === "error" ? "error" : qa === "connecting" ? "connecting" : phase;
+  const dCall = qaLive ? sampleLive : qa === "scorecard" ? sampleEnded : call;
+  const dCaptions: CaptionLine[] = qaLive ? sampleCaptions() : captions;
+  const dCard = qa === "scorecard" ? { card: sampleCard, previous: null, trace: sampleEnded.panicTrace } : card;
+  const dError = qa === "error" ? "The line is unavailable right now." : error;
+  const dNow = qaLive ? (sampleLive.turns.at(-1)?.t ?? 0) + 2500 : qa === "scorecard" ? sampleCard.durationMs : nowMs;
+  const dTrainee = qaLive ? (sampleLive.turns.filter((t) => t.who === "trainee").at(-1)?.text ?? "") : lastTrainee;
+  const live = dPhase === "live";
+  const panic = dCall?.panic ?? scenario.startPanic;
+  const prevPanic = dCall && dCall.panicTrace.length > 1 ? dCall.panicTrace[dCall.panicTrace.length - 2].panic : null;
 
   return (
     <div className="min-h-dvh flex flex-col bg-canvas text-ink">
@@ -464,19 +479,19 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
           <span className="text-xs tracking-[0.06em] text-ink-muted">LINES</span>
           {scenarios.map((s) => {
             const active = s.id === scenario.id;
-            const isLive = active && (phase === "live" || phase === "connecting");
-            const ringing = active && phase === "ringing";
+            const isLive = active && (dPhase === "live" || dPhase === "connecting");
+            const ringing = active && dPhase === "ringing";
             return (
               <button
                 key={s.id}
-                disabled={phase === "live" || phase === "connecting"}
+                disabled={dPhase === "live" || dPhase === "connecting"}
                 onClick={() => {
                   if (s.id !== scenario.id) {
                     prepared.current?.then((r) => r.v.close()).catch(() => {});
                     prepared.current = null;
                   }
                   setScenarioId(s.id);
-                  if (phase !== "ringing") reset();
+                  if (dPhase !== "ringing") reset();
                 }}
                 aria-pressed={active}
                 className={`text-left min-h-16 px-3.5 py-2.5 rounded-md flex flex-col gap-0.5 transition-colors ${
@@ -484,12 +499,22 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                 } disabled:cursor-not-allowed`}
               >
                 <span className={`font-mono text-[13px] tracking-[0.06em] ${isLive ? "font-semibold" : ringing ? "text-accent" : "text-ink-muted"}`}>
-                  LINE {s.line} · 911 · {isLive ? `LIVE ${fmt(nowMs)}` : ringing ? "RINGING" : "READY"}
+                  LINE {s.line} · 911 · {isLive ? `LIVE ${fmt(dNow)}` : ringing ? "RINGING" : "READY"}
                 </span>
                 <span className={`text-[15px] ${isLive ? "font-semibold" : ""}`}>{s.title}</span>
               </button>
             );
           })}
+          {(dPhase === "ringing" || dPhase === "error") && (
+            <div className="mt-4 p-3.5 border border-line rounded-md flex flex-col gap-2">
+              <span className="text-xs tracking-[0.06em] text-ink-muted">TRY IT IN 90 SECONDS</span>
+              <span className="text-sm leading-snug">1 · Answer. She is already panicking.</span>
+              <span className="text-sm leading-snug">2 · Hold Space and ask where she is. Talk over her and she stops mid-word.</span>
+              <span className="text-sm leading-snug">3 · Say her name, tell her help is coming. Hear her steady.</span>
+              <span className="text-sm leading-snug">4 · Read the address back. Hang up for the scorecard.</span>
+              <span className="text-[13px] text-ink-muted">No mic? You can type your side.</span>
+            </div>
+          )}
           <div className="mt-4 p-3.5 bg-surface-1 rounded-md flex flex-col gap-2">
             <span className="text-xs tracking-[0.06em] text-ink-muted">ON THIS CALL, GET</span>
             {scenario.checklist.map((c, i) => (
@@ -502,18 +527,18 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
 
         {/* center: the caller stage */}
         <main className="order-1 lg:order-2 flex-[999_1_560px] min-w-0 px-6 sm:px-10 pt-7 flex flex-col gap-5">
-          {phase === "ended" && card ? (
+          {dPhase === "ended" && dCard ? (
             <div className="py-4">
               <ScorecardView
-                card={card.card}
-                previous={card.previous}
-                trace={card.trace}
+                card={dCard.card}
+                previous={dCard.previous}
+                trace={dCard.trace}
                 title={`Line ${scenario.line} · ${scenario.title}`}
                 onAgain={() => void answer()}
                 onNext={reset}
               />
             </div>
-          ) : phase === "ringing" || phase === "error" || phase === "connecting" ? (
+          ) : dPhase === "ringing" || dPhase === "error" || dPhase === "connecting" ? (
             <div className="flex-1 flex flex-col justify-center gap-5 py-10">
               <span className="font-mono text-sm tracking-[0.08em] text-accent">● INCOMING · LINE {scenario.line} · 911</span>
               <h1 className="m-0 text-[36px] sm:text-[52px] leading-[1.1] font-semibold tracking-[-0.02em] max-w-[760px]">{scenario.brief}</h1>
@@ -523,16 +548,31 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
               <div className="flex flex-wrap items-center gap-3 mt-2">
                 <button
                   onClick={() => void answer()}
-                  disabled={phase === "connecting"}
+                  disabled={dPhase === "connecting"}
                   className="h-14 px-7 rounded-md bg-accent text-accent-ink font-bold text-lg disabled:opacity-60"
                 >
-                  {phase === "connecting" ? "Connecting…" : `Answer line ${scenario.line}`}
+                  {dPhase === "connecting" ? "Connecting…" : `Answer line ${scenario.line}`}
                 </button>
                 <span className="text-[15px] text-ink-muted">or press Space · a headset helps</span>
               </div>
-              {error && (
+              {/* small screens: the result, before the line keys push it down */}
+              {dPhase === "ringing" && (
+                <p data-result className="lg:hidden m-0 text-[15px] text-[#c3c9d1]">
+                  {(() => {
+                    const c = lastCard ?? sampleCard;
+                    const sec = c.addressConfirmedMs !== null ? Math.round(c.addressConfirmedMs / 1000) : null;
+                    return (
+                      <>
+                        <span className="text-ink-muted">{lastCard ? "Your last call: " : "Sample call, scripted trainee: "}</span>
+                        {sec !== null ? `${sec} s to a confirmed address` : "address never confirmed"} · her panic {c.panicStart} → {c.panicEnd}
+                      </>
+                    );
+                  })()}
+                </p>
+              )}
+              {dError && (
                 <p role="alert" className="m-0 text-warning">
-                  {error}
+                  {dError}
                 </p>
               )}
             </div>
@@ -547,13 +587,13 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                 <span className="text-[13px] text-ink-muted">Voice: AssemblyAI text-to-speech</span>
                 <Meter v={voiceLevel} />
               </div>
-              <Captions lines={captions} />
+              <Captions lines={dCaptions} callerName={scenario.caller.name} />
               {thinking && <p className="m-0 text-ink-muted">…</p>}
-              {(lastTrainee || partial || talking) && (
+              {(dTrainee || partial || talking) && (
                 <div className="self-end max-w-[520px] text-right flex flex-col gap-1">
                   <span className="text-xs tracking-[0.06em] text-ink-muted">YOU</span>
                   <p className={`m-0 text-[19px] leading-snug ${partial || talking ? "text-ink-muted" : "text-[#c3c9d1]"}`}>
-                    {talking ? partial || "Listening…" : lastTrainee}
+                    {talking ? partial || "Listening…" : dTrainee}
                   </p>
                 </div>
               )}
@@ -571,7 +611,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                     </span>
                   )}
                 </div>
-                <PanicTrace trace={call?.panicTrace ?? []} nowMs={nowMs} />
+                <PanicTrace trace={dCall?.panicTrace ?? []} nowMs={nowMs} />
               </section>
             </>
           )}
@@ -579,10 +619,10 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
 
         {/* right: incident card */}
         <aside className="order-3 flex-[1_1_320px] lg:max-w-[360px] p-5 lg:border-l border-line bg-surface-1 flex flex-col gap-1">
-          {phase === "ringing" && lastCard ? (
-            <LastCall card={lastCard} />
+          {dPhase === "ringing" ? (
+            <LastCall card={lastCard ?? sampleCard} sample={!lastCard} />
           ) : (
-            <IncidentCard call={call} scenario={scenario} nowMs={live ? nowMs : call ? (card?.card.durationMs ?? nowMs) : 0} />
+            <IncidentCard call={dCall} scenario={scenario} nowMs={live ? dNow : dCall ? (dCard?.card.durationMs ?? dNow) : 0} />
           )}
           {metrics.length > 0 && (
             <details className="mt-3 text-[13px] text-ink-muted">
@@ -605,7 +645,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
 
       {/* control bar */}
       <footer className="sticky bottom-0 bg-canvas min-h-[72px] px-5 py-3 border-t border-line flex items-center gap-3 flex-wrap">
-        {live && !typedOnly && (
+        {live && !typedOnly && qa !== "typed" && (
           <button
             onPointerDown={(e) => {
               e.preventDefault();
@@ -637,7 +677,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
             {talking && <Meter v={micLevel} dark />}
           </button>
         )}
-        {live && (showTyping || typedOnly) ? (
+        {live && (showTyping || typedOnly || qa === "typed") ? (
           <form
             className="flex gap-2 flex-1 min-w-[260px]"
             onSubmit={(e) => {
@@ -680,6 +720,20 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
   );
 }
 
+function noopSubscribe() {
+  return () => {};
+}
+
+/** Caption lines from the sample run: the last one half spoken. */
+function sampleCaptions(): CaptionLine[] {
+  const callerTurns = sampleLive.turns.filter((t) => t.who === "caller").slice(-3);
+  return callerTurns.map((t, i) => {
+    const words = t.text.split(/\s+/).length;
+    const last = i === callerTurns.length - 1;
+    return { id: i + 1, text: t.text, lit: last ? Math.ceil(words / 2) : words, done: !last };
+  });
+}
+
 function Meter({ v, dark = false }: { v: number; dark?: boolean }) {
   const bars = 9;
   return (
@@ -703,11 +757,11 @@ function Meter({ v, dark = false }: { v: number; dark?: boolean }) {
   );
 }
 
-function LastCall({ card }: { card: Scorecard }) {
+function LastCall({ card, sample }: { card: Scorecard; sample: boolean }) {
   const sec = card.addressConfirmedMs !== null ? Math.round(card.addressConfirmedMs / 1000) : null;
   return (
-    <section aria-label="Your last call on this line" className="flex flex-col gap-3">
-      <span className="text-xs tracking-[0.06em] text-ink-muted">YOUR LAST CALL ON THIS LINE</span>
+    <section data-result aria-label={sample ? "A sample call" : "Your last call on this line"} className="hidden lg:flex flex-col gap-3">
+      <span className="text-xs tracking-[0.06em] text-ink-muted">{sample ? "SAMPLE SCORECARD · SCRIPTED TRAINEE" : "YOUR LAST CALL ON THIS LINE"}</span>
       <span className="font-mono text-4xl font-semibold tabular-nums">{sec !== null ? `${sec} s` : "—"}</span>
       <span className="text-[15px] text-[#c3c9d1]">{sec !== null ? "to a confirmed address" : "address never confirmed"}</span>
       <div className="border-t border-line pt-3 flex flex-col gap-2 text-sm">
