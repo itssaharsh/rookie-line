@@ -396,8 +396,16 @@
         "observe: grep of .next/static for the key prefix finds nothing"
       ],
       "rollback": "n/a",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "7275749",
+      "started_after": 40,
+      "evidence": [
+        "E0041",
+        "E0042",
+        "E0043",
+        "E0044"
+      ]
     },
     {
       "id": "T12",
