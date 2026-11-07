@@ -1,6 +1,6 @@
 # Rookie Line
 
-**Try it live: https://rookie-line.vercel.app** (no sign-in; a headset helps, or type your side, or press "Hear a sample call")
+**Try it live:** [rookie-line.vercel.app](https://rookie-line.vercel.app) (no sign-in; a headset helps, or type your side, or press "Hear a sample call")
 
 **Rookie Line puts a 911 trainee on a live call with a panicked caller who stammers and cuts off, and whose voice steadies only when they handle her right.** Built for AssemblyAI's "Voice hackathon week: Hack into speech" on its new Text-to-Speech API.
 
