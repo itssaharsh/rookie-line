@@ -448,9 +448,14 @@
         "observe: final video reviewed"
       ],
       "rollback": "n/a",
-      "status": "todo",
-      "notes": "",
-      "suite": false
+      "status": "done",
+      "notes": "[2026-11-07 start] recording is allowed in the freeze; started before 05:00Z",
+      "suite": false,
+      "base": "754cb30",
+      "started_after": 48,
+      "evidence": [
+        "E0049"
+      ]
     },
     {
       "id": "T14",

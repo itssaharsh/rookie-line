@@ -1,0 +1,194 @@
+{
+ "url": "https://rookie-line.vercel.app/",
+ "sizes": {
+  "1440x900": {
+   "findings": [
+    [
+     "ok",
+     "primary action \"Answer line 1\" is on the first screen (y=578, given)"
+    ],
+    [
+     "ok",
+     "the result is on the first screen with no input (y=72)"
+    ],
+    [
+     "ok",
+     "\"911\" is in the first screen's content"
+    ],
+    [
+     "ok",
+     "text on the first screen: smallest 12 px, median 14 px"
+    ]
+   ],
+   "measurements": {
+    "vw": 1440,
+    "vh": 900,
+    "scrollY": 0,
+    "scrollWidth": 1440,
+    "scrollHeight": 944,
+    "action": {
+     "text": "Answer line 1",
+     "how": "given",
+     "x": 300,
+     "y": 578,
+     "w": 168,
+     "h": 56,
+     "bottom": 634,
+     "docY": 578,
+     "above": true,
+     "offside": false,
+     "cover": null,
+     "notControl": null
+    },
+    "result": {
+     "x": 1141,
+     "y": 72,
+     "w": 279,
+     "h": 289,
+     "bottom": 361,
+     "docY": 72,
+     "above": true,
+     "offside": false
+    },
+    "badSelector": false,
+    "frames": 0,
+    "viewportMeta": true,
+    "fieldsBeforeAction": 0,
+    "passwordFields": 0,
+    "wall": false,
+    "blank": false,
+    "clipX": false,
+    "unhidden": {
+     "n": 0,
+     "examples": []
+    },
+    "dead": [],
+    "comingSoon": false,
+    "h1": "Her dad collapsed. Get the address and a callback number.",
+    "overlap": false,
+    "font": {
+     "min": 12,
+     "sample": "TRAINING SIMULATION \u00b7 fictional caller a",
+     "median": 14,
+     "n": 57
+    },
+    "promise": [
+     [
+      "911",
+      "content"
+     ]
+    ],
+    "firstLines": [
+     "Rookie Line",
+     "Practice 911 calls for trainee call-takers",
+     "TRAINING SIMULATION \u00b7 fictional caller and address",
+     "How it works",
+     "LINES",
+     "LINE 1 \u00b7 911 \u00b7 RINGING",
+     "Cardiac arrest",
+     "LINE 2 \u00b7 911 \u00b7 READY"
+    ]
+   },
+   "screenshot": "qa/fold-live/first_1440x900.png",
+   "status": 200,
+   "final_url": "https://rookie-line.vercel.app/",
+   "page_errors": [],
+   "waited_ms": 4000
+  },
+  "390x844": {
+   "findings": [
+    [
+     "ok",
+     "primary action \"Answer line 1\" is on the first screen (y=555, given)"
+    ],
+    [
+     "ok",
+     "the result is on the first screen with no input (y=734)"
+    ],
+    [
+     "ok",
+     "\"911\" is in the first screen's content"
+    ],
+    [
+     "ok",
+     "text on the first screen: smallest 12 px, median 15 px"
+    ]
+   ],
+   "measurements": {
+    "vw": 390,
+    "vh": 844,
+    "scrollY": 0,
+    "scrollWidth": 390,
+    "scrollHeight": 1693,
+    "action": {
+     "text": "Answer line 1",
+     "how": "given",
+     "x": 24,
+     "y": 555,
+     "w": 168,
+     "h": 56,
+     "bottom": 611,
+     "docY": 555,
+     "above": true,
+     "offside": false,
+     "cover": null,
+     "notControl": null
+    },
+    "result": {
+     "x": 24,
+     "y": 734,
+     "w": 342,
+     "h": 45,
+     "bottom": 779,
+     "docY": 734,
+     "above": true,
+     "offside": false
+    },
+    "badSelector": false,
+    "frames": 0,
+    "viewportMeta": true,
+    "fieldsBeforeAction": 0,
+    "passwordFields": 0,
+    "wall": false,
+    "blank": false,
+    "clipX": false,
+    "unhidden": {
+     "n": 0,
+     "examples": []
+    },
+    "dead": [],
+    "comingSoon": false,
+    "h1": "Her dad collapsed. Get the address and a callback number.",
+    "overlap": false,
+    "font": {
+     "min": 12,
+     "sample": "TRAINING SIMULATION \u00b7 fictional caller a",
+     "median": 15,
+     "n": 15
+    },
+    "promise": [
+     [
+      "911",
+      "content"
+     ]
+    ],
+    "firstLines": [
+     "Rookie Line",
+     "Practice 911 calls for trainee call-takers",
+     "TRAINING SIMULATION \u00b7 fictional caller and address",
+     "How it works",
+     "LINES",
+     "LINE 1 \u00b7 911 \u00b7 RINGING",
+     "Cardiac arrest",
+     "LINE 2 \u00b7 911 \u00b7 READY"
+    ]
+   },
+   "screenshot": "qa/fold-live/first_390x844.png",
+   "status": 200,
+   "final_url": "https://rookie-line.vercel.app/",
+   "page_errors": [],
+   "waited_ms": 4000
+  }
+ },
+ "verdict": "PASS"
+}
