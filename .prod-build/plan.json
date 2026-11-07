@@ -244,10 +244,15 @@
         "observe: the deployed URL opens signed out and /api/health returns tts ok"
       ],
       "rollback": "vercel rollback",
-      "status": "blocked",
-      "notes": "2026-11-03 21:50Z: adding ASSEMBLYAI_API_KEY to Vercel env was denied by the permission check (secret-store write). Needs Saharsh: approve, or run `npx vercel --scope lack-toes env add ASSEMBLYAI_API_KEY production --sensitive` himself. Nothing was created on Vercel.",
-      "base": "e50cedf",
-      "started_after": 22
+      "status": "done",
+      "notes": "2026-11-03 21:50Z: adding ASSEMBLYAI_API_KEY to Vercel env was denied by the permission check (secret-store write). Needs Saharsh: approve, or run `npx vercel --scope lack-toes env add ASSEMBLYAI_API_KEY production --sensitive` himself. Nothing was created on Vercel. | 2026-11-07: key added by Saharsh; redeployed.\n[2026-11-07 start] deploy is allowed in the freeze; key added by Saharsh",
+      "base": "a1ecea2",
+      "started_after": 50,
+      "evidence": [
+        "E0051",
+        "E0052",
+        "E0053"
+      ]
     },
     {
       "id": "T07",
