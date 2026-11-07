@@ -674,7 +674,7 @@ export function Console({ scenarios }: { scenarios: Scenario[] }) {
                     </span>
                   )}
                 </div>
-                <PanicTrace trace={dCall?.panicTrace ?? []} nowMs={nowMs} />
+                <PanicTrace trace={dCall?.panicTrace ?? []} nowMs={dNow} />
               </section>
             </>
           )}
